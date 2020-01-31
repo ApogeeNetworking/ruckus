@@ -9,6 +9,8 @@ import (
 	"time"
 )
 
+const loginErr string = "you must first login to perform this action"
+
 // Client struct is used to handle the Connection with the SmartZone Controller
 type Client struct {
 	BaseURL  string
@@ -126,8 +128,7 @@ type RksZoneReq struct {
 // GetZones retrieves a Paginated List of Zones
 func (c *Client) GetZones(o RksOptions) (RksZoneReq, error) {
 	if c.serviceTicket == "" {
-		e := "you must first login to perform this action"
-		return RksZoneReq{}, fmt.Errorf(e)
+		return RksZoneReq{}, fmt.Errorf(loginErr)
 	}
 	req, err := c.genGetReq("/rkszones")
 	if err != nil {
@@ -143,8 +144,6 @@ func (c *Client) GetZones(o RksOptions) (RksZoneReq, error) {
 	defer res.Body.Close()
 	var zones RksZoneReq
 	json.NewDecoder(res.Body).Decode(&zones)
-
-	fmt.Println(zones.List[0].ID)
 
 	return zones, nil
 }
@@ -180,7 +179,7 @@ type RksSysSumRes struct {
 // GetSysSum retrieves system summary information from the Ruckus Controller
 func (c *Client) GetSysSum(o RksOptions) (RksSysSumRes, error) {
 	if c.serviceTicket == "" {
-		// e := "you must first login to perform this action"
+		return RksSysSumRes{}, fmt.Errorf(loginErr)
 	}
 	req, err := c.genGetReq("/controller")
 	if err != nil {
