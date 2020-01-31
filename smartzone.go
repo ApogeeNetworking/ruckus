@@ -189,7 +189,7 @@ func (c *Client) GetSysSum(o RksOptions) (RksSysSumRes, error) {
 
 	res, err := c.http.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		return RksSysSumRes{}, fmt.Errorf("failed to get resp: %v", err)
 	}
 	defer res.Body.Close()
 	var sysSum RksSysSumRes
