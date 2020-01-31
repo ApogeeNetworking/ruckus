@@ -69,7 +69,7 @@ func (c *Client) Login() error {
 	var auth SZAuthObj
 	json.NewDecoder(res.Body).Decode(&auth)
 	c.serviceTicket = auth.ServiceTicket
-	fmt.Println(auth)
+	// fmt.Println(auth)
 	return nil
 }
 
@@ -91,19 +91,15 @@ func (c *Client) Logout() error {
 	return nil
 }
 
-// RksZone the object returned when retrieving Rks Zones
-type RksZone struct {
+// RksCommonReq contains fields used in ALL Get Reqs
+type RksCommonReq struct {
 	TotalCount int  `json:"totalCount"`
 	HasMore    bool `json:"hasMore"`
 	FirstIndex int  `json:"firstIndex"`
-	List       []struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
-	} `json:"list"`
 }
 
-// ZoneOptions query options for GetZones
-type ZoneOptions struct {
+// RksOptions common ruckus query options for data Retrieval
+type RksOptions struct {
 	// optional: the index of the 1st Entry to be retrieved.
 	// Default 0
 	Index string
@@ -115,38 +111,91 @@ type ZoneOptions struct {
 	DomainID string
 }
 
+// RksZone properties
+type RksZone struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// RksZoneReq the object returned when retrieving Rks Zones
+type RksZoneReq struct {
+	RksCommonReq
+	List []RksZone `json:"list"`
+}
+
 // GetZones retrieves a Paginated List of Zones
-func (c *Client) GetZones(o ZoneOptions) (RksZone, error) {
+func (c *Client) GetZones(o RksOptions) (RksZoneReq, error) {
 	if c.serviceTicket == "" {
 		e := "you must first login to perform this action"
-		return RksZone{}, fmt.Errorf(e)
+		return RksZoneReq{}, fmt.Errorf(e)
 	}
-	req, err := http.NewRequest("GET", c.BaseURL+"/rkszones", nil)
+	req, err := c.genGetReq("/rkszones")
 	if err != nil {
-		return RksZone{}, fmt.Errorf("failed to create request: %v", err)
+		return RksZoneReq{}, err
 	}
-	q := req.URL.Query()
-	q.Add("serviceTicket", c.serviceTicket)
-	if o.Index != "" {
-		q.Add("index", o.Index)
-	}
-	if o.ListSize != "" {
-		q.Add("listSize", o.ListSize)
-	}
-	if o.DomainID != "" {
-		q.Add("domainId", o.DomainID)
-	}
-	req.URL.RawQuery = q.Encode()
+	// Update the Request
+	c.addQS(req, o)
 
 	res, err := c.http.Do(req)
 	if err != nil {
-		return RksZone{}, fmt.Errorf("failed to get resp: %v", err)
+		return RksZoneReq{}, fmt.Errorf("failed to get resp: %v", err)
 	}
 	defer res.Body.Close()
-	var zones RksZone
+	var zones RksZoneReq
 	json.NewDecoder(res.Body).Decode(&zones)
 
+	fmt.Println(zones.List[0].ID)
+
 	return zones, nil
+}
+
+// RksController Properties
+type RksController struct {
+	ID             string      `json:"id"`
+	Model          string      `json:"model"`
+	Description    string      `json:"description"`
+	HostName       string      `json:"hostName"`
+	Mac            string      `json:"mac"`
+	SerialNumber   string      `json:"serialNumber"`
+	ClusterRole    string      `json:"clusterRole"`
+	ControlNatIP   string      `json:"controlNatIp"`
+	UptimeInSec    int         `json:"uptimeInSec"`
+	Name           string      `json:"name"`
+	Version        string      `json:"version"`
+	ApVersion      string      `json:"apVersion"`
+	ControlIP      string      `json:"controlIp"`
+	ClusterIP      string      `json:"clusterIp"`
+	ManagementIP   string      `json:"managementIp"`
+	ControlIpv6    interface{} `json:"controlIpv6"`
+	ClusterIpv6    interface{} `json:"clusterIpv6"`
+	ManagementIpv6 interface{} `json:"managementIpv6"`
+}
+
+// RksSysSumRes ruckus controller result
+type RksSysSumRes struct {
+	RksCommonReq
+	List []RksController `json:"list"`
+}
+
+// GetSysSum retrieves system summary information from the Ruckus Controller
+func (c *Client) GetSysSum(o RksOptions) (RksSysSumRes, error) {
+	if c.serviceTicket == "" {
+		// e := "you must first login to perform this action"
+	}
+	req, err := c.genGetReq("/controller")
+	if err != nil {
+		return RksSysSumRes{}, err
+	}
+	c.addQS(req, o)
+
+	res, err := c.http.Do(req)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer res.Body.Close()
+	var sysSum RksSysSumRes
+	json.NewDecoder(res.Body).Decode(&sysSum)
+	return sysSum, nil
 }
 
 // RksAp an Access Point in a SZ Controller
@@ -279,4 +328,27 @@ type RksAp struct {
 	MedianTxRadioMCSRate50G        int         `json:"medianTxRadioMCSRate50G"`
 	MedianRxRadioMCSRate24G        int         `json:"medianRxRadioMCSRate24G"`
 	MedianRxRadioMCSRate50G        int         `json:"medianRxRadioMCSRate50G"`
+}
+
+func (c *Client) genGetReq(url string) (*http.Request, error) {
+	req, err := http.NewRequest("GET", c.BaseURL+url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %v", err)
+	}
+	return req, nil
+}
+
+func (c *Client) addQS(r *http.Request, o RksOptions) {
+	q := r.URL.Query()
+	q.Add("serviceTicket", c.serviceTicket)
+	if o.Index != "" {
+		q.Add("index", o.Index)
+	}
+	if o.ListSize != "" {
+		q.Add("listSize", o.ListSize)
+	}
+	if o.DomainID != "" {
+		q.Add("domainId", o.DomainID)
+	}
+	r.URL.RawQuery = q.Encode()
 }
