@@ -113,36 +113,36 @@ type RksOptions struct {
 	DomainID string
 }
 
-// RksZone properties
-type RksZone struct {
+// RksObject properties
+type RksObject struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-// RksZoneReq the object returned when retrieving Rks Zones
-type RksZoneReq struct {
+// RksCommonRes the object returned when retrieving Rks Objects with Name/ID
+type RksCommonRes struct {
 	RksCommonReq
-	List []RksZone `json:"list"`
+	List []RksObject `json:"list"`
 }
 
 // GetZones retrieves a Paginated List of Zones
-func (c *Client) GetZones(o RksOptions) (RksZoneReq, error) {
+func (c *Client) GetZones(o RksOptions) (RksCommonRes, error) {
 	if c.serviceTicket == "" {
-		return RksZoneReq{}, fmt.Errorf(loginErr)
+		return RksCommonRes{}, fmt.Errorf(loginErr)
 	}
 	req, err := c.genGetReq("/rkszones")
 	if err != nil {
-		return RksZoneReq{}, err
+		return RksCommonRes{}, err
 	}
 	// Update the Request
 	c.addQS(req, o)
 
 	res, err := c.http.Do(req)
 	if err != nil {
-		return RksZoneReq{}, fmt.Errorf("failed to get resp: %v", err)
+		return RksCommonRes{}, fmt.Errorf("failed to get resp: %v", err)
 	}
 	defer res.Body.Close()
-	var zones RksZoneReq
+	var zones RksCommonRes
 	json.NewDecoder(res.Body).Decode(&zones)
 
 	return zones, nil
