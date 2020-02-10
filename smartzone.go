@@ -148,6 +148,26 @@ func (c *Client) GetZones(o RksOptions) (RksCommonRes, error) {
 	return zones, nil
 }
 
+// GetZone retrieve Zone Configuration from Rks Controller
+func (c *Client) GetZone(id string) (RksZone, error) {
+	if c.serviceTicket == "" {
+		return RksZone{}, fmt.Errorf(loginErr)
+	}
+	req, err := c.genGetReq(fmt.Sprintf("/rkszones/%s", id))
+	if err != nil {
+		return RksZone{}, err
+	}
+	c.addQS(req, RksOptions{})
+	res, err := c.http.Do(req)
+	if err != nil {
+		return RksZone{}, fmt.Errorf("request failed: %v", err)
+	}
+	defer res.Body.Close()
+	var zone RksZone
+	json.NewDecoder(res.Body).Decode(&zone)
+	return zone, nil
+}
+
 // RksController Properties
 type RksController struct {
 	ID             string      `json:"id"`
@@ -350,4 +370,166 @@ func (c *Client) addQS(r *http.Request, o RksOptions) {
 		q.Add("domainId", o.DomainID)
 	}
 	r.URL.RawQuery = q.Encode()
+}
+
+// RksZone properties and fields of a Ruckus Controller Zone
+type RksZone struct {
+	ID          string `json:"id"`
+	DomainID    string `json:"domainId"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	CountryCode string `json:"countryCode"`
+	Version     string `json:"version"`
+	Timezone    struct {
+		SystemTimezone     string      `json:"systemTimezone"`
+		CustomizedTimezone interface{} `json:"customizedTimezone"`
+	} `json:"timezone"`
+	IPMode                   string      `json:"ipMode"`
+	Ipv6TrafficFilterEnabled interface{} `json:"ipv6TrafficFilterEnabled"`
+	Login                    struct {
+		ApLoginName     string `json:"apLoginName"`
+		ApLoginPassword string `json:"apLoginPassword"`
+	} `json:"login"`
+	Mesh                       interface{} `json:"mesh"`
+	DfsChannelEnabled          bool        `json:"dfsChannelEnabled"`
+	CbandChannelEnabled        bool        `json:"cbandChannelEnabled"`
+	CbandChannelLicenseEnabled bool        `json:"cbandChannelLicenseEnabled"`
+	Channel144Enabled          bool        `json:"channel144Enabled"`
+	Wifi24                     struct {
+		AutoCellSizing        interface{} `json:"autoCellSizing"`
+		TxPower               string      `json:"txPower"`
+		ChannelWidth          int         `json:"channelWidth"`
+		Channel               int         `json:"channel"`
+		ChannelRange          []int       `json:"channelRange"`
+		AvailableChannelRange []int       `json:"availableChannelRange"`
+	} `json:"wifi24"`
+	Wifi50 struct {
+		AutoCellSizing               interface{} `json:"autoCellSizing"`
+		TxPower                      string      `json:"txPower"`
+		ChannelWidth                 int         `json:"channelWidth"`
+		IndoorChannel                int         `json:"indoorChannel"`
+		OutdoorChannel               int         `json:"outdoorChannel"`
+		IndoorSecondaryChannel       interface{} `json:"indoorSecondaryChannel"`
+		OutdoorSecondaryChannel      interface{} `json:"outdoorSecondaryChannel"`
+		IndoorChannelRange           []int       `json:"indoorChannelRange"`
+		OutdoorChannelRange          []int       `json:"outdoorChannelRange"`
+		AvailableIndoorChannelRange  []int       `json:"availableIndoorChannelRange"`
+		AvailableOutdoorChannelRange []int       `json:"availableOutdoorChannelRange"`
+	} `json:"wifi50"`
+	ProtectionMode24         string      `json:"protectionMode24"`
+	Syslog                   interface{} `json:"syslog"`
+	SmartMonitor             interface{} `json:"smartMonitor"`
+	ClientAdmissionControl24 interface{} `json:"clientAdmissionControl24"`
+	ClientAdmissionControl50 interface{} `json:"clientAdmissionControl50"`
+	ChannelModeEnabled       bool        `json:"channelModeEnabled"`
+	TunnelType               string      `json:"tunnelType"`
+	TunnelProfile            struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	} `json:"tunnelProfile"`
+	RuckusGreTunnelProfile struct {
+		ID   string `json:"id"`
+		Name string `json:"name"`
+	} `json:"ruckusGreTunnelProfile"`
+	SoftGreTunnelProflies interface{} `json:"softGreTunnelProflies"`
+	IpsecProfiles         interface{} `json:"ipsecProfiles"`
+	IpsecTunnelMode       interface{} `json:"ipsecTunnelMode"`
+	BackgroundScanning24  struct {
+		FrequencyInSec int `json:"frequencyInSec"`
+	} `json:"backgroundScanning24"`
+	BackgroundScanning50 struct {
+		FrequencyInSec int `json:"frequencyInSec"`
+	} `json:"backgroundScanning50"`
+	ClientLoadBalancing24 interface{} `json:"clientLoadBalancing24"`
+	ClientLoadBalancing50 interface{} `json:"clientLoadBalancing50"`
+	BandBalancing         struct {
+		Mode             string `json:"mode"`
+		Wifi24Percentage int    `json:"wifi24Percentage"`
+	} `json:"bandBalancing"`
+	LoadBalancingMethod string `json:"loadBalancingMethod"`
+	Rogue               struct {
+		ReportType        string      `json:"reportType"`
+		MaliciousTypes    interface{} `json:"maliciousTypes"`
+		ProtectionEnabled bool        `json:"protectionEnabled"`
+	} `json:"rogue"`
+	LocationBasedService interface{} `json:"locationBasedService"`
+	ApRebootTimeout      struct {
+		GatewayLossTimeoutInSec int `json:"gatewayLossTimeoutInSec"`
+		ServerLossTimeoutInSec  int `json:"serverLossTimeoutInSec"`
+	} `json:"apRebootTimeout"`
+	Location                          string      `json:"location"`
+	LocationAdditionalInfo            string      `json:"locationAdditionalInfo"`
+	Latitude                          interface{} `json:"latitude"`
+	Longitude                         interface{} `json:"longitude"`
+	VlanOverlappingEnabled            bool        `json:"vlanOverlappingEnabled"`
+	NodeAffinityProfile               interface{} `json:"nodeAffinityProfile"`
+	ZoneAffinityProfileID             string      `json:"zoneAffinityProfileId"`
+	EnforcePriorityZoneAffinityEnable bool        `json:"enforcePriorityZoneAffinityEnable"`
+	AwsVenue                          string      `json:"awsVenue"`
+	VenueProfile                      interface{} `json:"venueProfile"`
+	IpsecProfile                      interface{} `json:"ipsecProfile"`
+	BonjourFencingPolicyEnabled       bool        `json:"bonjourFencingPolicyEnabled"`
+	DhcpSiteConfig                    struct {
+		SiteEnabled    bool        `json:"siteEnabled"`
+		DwpdEnabled    interface{} `json:"dwpdEnabled"`
+		ManualSelect   interface{} `json:"manualSelect"`
+		SiteMode       interface{} `json:"siteMode"`
+		SiteProfileIds interface{} `json:"siteProfileIds"`
+		SiteAps        interface{} `json:"siteAps"`
+		Eth0ProfileID  interface{} `json:"eth0ProfileId"`
+		Eth1ProfileID  interface{} `json:"eth1ProfileId"`
+	} `json:"dhcpSiteConfig"`
+	BonjourFencingPolicy   interface{} `json:"bonjourFencingPolicy"`
+	AutoChannelSelection24 struct {
+		ChannelSelectMode string      `json:"channelSelectMode"`
+		ChannelFlyMtbc    interface{} `json:"channelFlyMtbc"`
+	} `json:"autoChannelSelection24"`
+	AutoChannelSelection50 struct {
+		ChannelSelectMode string      `json:"channelSelectMode"`
+		ChannelFlyMtbc    interface{} `json:"channelFlyMtbc"`
+	} `json:"autoChannelSelection50"`
+	ChannelEvaluationInterval int `json:"channelEvaluationInterval"`
+	ApMgmtVlan                struct {
+		ID   int    `json:"id"`
+		Mode string `json:"mode"`
+	} `json:"apMgmtVlan"`
+	ApLatencyInterval struct {
+		PingEnabled bool `json:"pingEnabled"`
+	} `json:"apLatencyInterval"`
+	Altitude struct {
+		AltitudeUnit  string      `json:"altitudeUnit"`
+		AltitudeValue interface{} `json:"altitudeValue"`
+	} `json:"altitude"`
+	RecoverySsid struct {
+		RecoverySsidEnabled bool `json:"recoverySsidEnabled"`
+	} `json:"recoverySsid"`
+	DosBarringEnable      int `json:"dosBarringEnable"`
+	DosBarringPeriod      int `json:"dosBarringPeriod"`
+	DosBarringThreshold   int `json:"dosBarringThreshold"`
+	DosBarringCheckPeriod int `json:"dosBarringCheckPeriod"`
+	SnmpAgent             struct {
+		ApSnmpEnabled bool          `json:"apSnmpEnabled"`
+		SnmpV2Agent   []interface{} `json:"snmpV2Agent"`
+		SnmpV3Agent   []interface{} `json:"snmpV3Agent"`
+	} `json:"snmpAgent"`
+	ClusterRedundancyEnabled                   bool        `json:"clusterRedundancyEnabled"`
+	AaaAffinityEnabled                         bool        `json:"aaaAffinityEnabled"`
+	RogueApReportThreshold                     int         `json:"rogueApReportThreshold"`
+	RogueApAggressivenessMode                  int         `json:"rogueApAggressivenessMode"`
+	RogueApJammingDetection                    bool        `json:"rogueApJammingDetection"`
+	RogueApJammingThreshold                    interface{} `json:"rogueApJammingThreshold"`
+	DirectedMulticastFromWiredClientEnabled    bool        `json:"directedMulticastFromWiredClientEnabled"`
+	DirectedMulticastFromWirelessClientEnabled bool        `json:"directedMulticastFromWirelessClientEnabled"`
+	DirectedMulticastFromNetworkEnabled        bool        `json:"directedMulticastFromNetworkEnabled"`
+	HealthCheckSitesEnabled                    bool        `json:"healthCheckSitesEnabled"`
+	HealthCheckSites                           []string    `json:"healthCheckSites"`
+	SSHTunnelEncryption                        string      `json:"sshTunnelEncryption"`
+	LteBandLockChannels                        []struct {
+		SimCardID int    `json:"simCardId"`
+		Type      string `json:"type"`
+		Channel4G string `json:"channel4g"`
+		Channel3G string `json:"channel3g"`
+	} `json:"lteBandLockChannels"`
+	ApHccdEnabled bool `json:"apHccdEnabled"`
+	ApHccdPersist bool `json:"apHccdPersist"`
 }
