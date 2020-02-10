@@ -16,12 +16,6 @@ type RksAP struct {
 	LanPorts  int    `json:"lanPortSize"`
 }
 
-// RksApRes ... GetAP Result
-type RksApRes struct {
-	RksCommonReq
-	List []RksAP `json:"list"`
-}
-
 // GetAPs retrieves APs associated with the Controller
 func (c *Client) GetAPs(o RksOptions) ([]RksAP, error) {
 	var getMore func(o RksOptions, r []RksAP) ([]RksAP, error)
@@ -37,7 +31,11 @@ func (c *Client) GetAPs(o RksOptions) ([]RksAP, error) {
 			return rksAps, fmt.Errorf("failed to get resp: %v", err)
 		}
 		defer res.Body.Close()
-		var aps RksApRes
+		type rksApResult struct {
+			RksCommonReq
+			List []RksAP `json:"list"`
+		}
+		var aps rksApResult
 		json.NewDecoder(res.Body).Decode(&aps)
 		for _, ap := range aps.List {
 			rksAps = append(rksAps, ap)
