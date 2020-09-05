@@ -1,0 +1,8 @@
+.DS_Store
+.env
+config*
+go.sum
+*.txt
+ap_watcher
+watch.conf
+go.sum

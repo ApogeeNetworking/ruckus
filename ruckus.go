@@ -1,4 +1,4 @@
-package rkssz
+package ruckus
 
 import (
 	"crypto/tls"
