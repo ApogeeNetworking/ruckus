@@ -66,7 +66,7 @@ func (c *Client) GetAPs(o RksOptions) ([]RksAP, error) {
 			Attrs:         []string{"*"},
 			SortInfo:      rksSortInfo{SortCol: "apMac", Direction: "ASC"},
 			Page:          1,
-			Limit:         8,
+			Limit:         10000,
 		}
 		qjson, _ := json.Marshal(&q)
 		body := strings.NewReader(string(qjson))
