@@ -130,8 +130,6 @@ func (c *Client) GetApIntf(macAddr string) (ApIntf, error) {
 	return apIntf, nil
 }
 
-/*https://10.150.10.154:8443/wsg/api/public/v8_1/aps/60:D0:2C:2A:52:B0/apLldpNeighbors?serviceTicket=ST-135-RAdmIQLJOUd4BBjMecQa-vsz01-colo-dev-apogee-us&_dc=1601943678887*/
-
 // ApLldp ...
 type ApLldp struct {
 	RemoteHostname string `json:"lldpSysName"`
