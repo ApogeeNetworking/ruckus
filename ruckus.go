@@ -14,8 +14,9 @@ const loginErr string = "you must first login to perform this action"
 // Client struct is used to handle the Connection with the SmartZone Controller
 type Client struct {
 	BaseURL  string
-	Username string
-	Password string
+	host     string
+	username string
+	password string
 
 	http          *http.Client
 	serviceTicket string
@@ -25,8 +26,9 @@ type Client struct {
 func New(host, user, pass string, ignoreSSL bool) *Client {
 	return &Client{
 		BaseURL:  fmt.Sprintf("https://%s:8443/wsg/api/public/v8_1", host),
-		Username: user,
-		Password: pass,
+		host:     host,
+		username: user,
+		password: pass,
 		http: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
@@ -51,8 +53,8 @@ func (c *Client) Login() error {
 		Password string `json:"password"`
 	}
 	authObj := creds{
-		Username: c.Username,
-		Password: c.Password,
+		Username: c.username,
+		Password: c.password,
 	}
 	jdata, _ := json.Marshal(&authObj)
 	credentials := strings.NewReader(string(jdata))
@@ -61,13 +63,11 @@ func (c *Client) Login() error {
 		return fmt.Errorf("failed to create a new request: %v", err)
 	}
 	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
-
 	res, err := c.http.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to login: %v", err)
 	}
 	defer res.Body.Close()
-
 	var auth SZAuthObj
 	json.NewDecoder(res.Body).Decode(&auth)
 	c.serviceTicket = auth.ServiceTicket
