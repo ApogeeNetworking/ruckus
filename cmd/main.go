@@ -13,24 +13,22 @@ var host, user, pass string
 
 func init() {
 	gotenv.Load()
-	host = os.Getenv("HOST")
-	user = os.Getenv("USER")
-	pass = os.Getenv("PASS")
+	host = os.Getenv("RKS_HOST")
+	user = os.Getenv("RKS_USER")
+	pass = os.Getenv("RKS_PASS")
 }
 
 func main() {
-	sz := ruckus.New(
-		host,
-		user,
-		pass,
-		true,
-	)
+	sz := ruckus.New(host, user, pass, true)
 	err := sz.Login()
 	if err != nil {
 		log.Fatalf("login failed: %v", err)
 	}
-	aps(sz)
-	// rkszone(sz)
+	// mac := "EC:58:EA:0A:24:D0"
+	// mac := "60:d0:2c:2a:52:b0"
+	// apIntf, err := sz.GetApLldp(mac)
+	// fmt.Println(apIntf)
+	rkszones(sz)
 	err = sz.Logout()
 }
 
@@ -50,7 +48,10 @@ func rkszones(sz *ruckus.Client) {
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
-	fmt.Println(zones.List[0].ID)
+	for _, zone := range zones.List {
+		fmt.Println(zone)
+	}
+	// fmt.Println(zones.List[0].ID)
 }
 
 func rkszone(sz *ruckus.Client) {
