@@ -8,16 +8,6 @@ import (
 	"strings"
 )
 
-// RksAP ruckus ap properties
-type RksAP struct {
-	MacAddr   string `json:"mac"`
-	ZoneID    string `json:"zoneId"`
-	ApGroupID string `json:"apGroupId"`
-	Serial    string `json:"serial"`
-	Name      string `json:"name"`
-	LanPorts  int    `json:"lanPortSize"`
-}
-
 // GetAPs retrieves APs associated with the Controller
 func (c *Client) GetAPs(o RksOptions) ([]RksAP, error) {
 	var getMore func(o RksOptions, r []RksAP) ([]RksAP, error)
@@ -74,14 +64,6 @@ func (c *Client) GetApGroups(o RksOptions, zoneID string) ([]RksObject, error) {
 	return grps.List, nil
 }
 
-// ApIntf ...
-type ApIntf struct {
-	MacAddr string `json:"apMac"`
-	Speed   string `json:"phyLink"`
-	Status  string `json:"logicLink"`
-	Duplex  string
-}
-
 // GetApIntf ...
 func (c *Client) GetApIntf(macAddr string) (ApIntf, error) {
 	uri := fmt.Sprintf("https://%s:8443/wsg/api/scg/aps/%s", c.host, macAddr)
@@ -130,13 +112,6 @@ func (c *Client) GetApIntf(macAddr string) (ApIntf, error) {
 	return apIntf, nil
 }
 
-// ApLldp ...
-type ApLldp struct {
-	RemoteHostname string `json:"lldpSysName"`
-	RemoteIntf     string `json:"lldpPortDesc"`
-	RemoteIP       string `json:"lldpMgmtIP"`
-}
-
 // GetApLldp ...
 func (c *Client) GetApLldp(macAddr string) (ApLldp, error) {
 	uri := fmt.Sprintf("/aps/%s/apLldpNeighbors", macAddr)
@@ -151,15 +126,15 @@ func (c *Client) GetApLldp(macAddr string) (ApLldp, error) {
 	}
 	defer res.Body.Close()
 	type getApRESP struct {
-		Count int      `json:"totalCount"`
-		List  []ApLldp `json:"list"`
+		RksCommonReq
+		List []ApLldp `json:"list"`
 	}
 	var apResp getApRESP
 	var apLldp ApLldp
 	if err := json.NewDecoder(res.Body).Decode(&apResp); err != nil {
 		return apLldp, err
 	}
-	if apResp.Count == 0 {
+	if apResp.TotalCount == 0 {
 		return apLldp, nil
 	}
 	for _, lldp := range apResp.List {
@@ -168,3 +143,6 @@ func (c *Client) GetApLldp(macAddr string) (ApLldp, error) {
 	}
 	return apLldp, nil
 }
+
+// Reboot AP URL
+// https://10.150.10.154:8443/wsg/api/scg/aps/60:D0:2C:2A:52:B0/reboot

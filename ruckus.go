@@ -40,12 +40,6 @@ func New(host, user, pass string, ignoreSSL bool) *Client {
 	}
 }
 
-// SZAuthObj smart zone authorization object
-type SZAuthObj struct {
-	ControllerVersion string `json:"controllerVersion"`
-	ServiceTicket     string `json:"serviceTicket"`
-}
-
 // Login est a session with the Ruckus SZ Controller
 func (c *Client) Login() error {
 	type creds struct {
@@ -93,38 +87,6 @@ func (c *Client) Logout() error {
 	return nil
 }
 
-// RksCommonReq contains fields used in ALL Get Reqs
-type RksCommonReq struct {
-	TotalCount int  `json:"totalCount"`
-	HasMore    bool `json:"hasMore"`
-	FirstIndex int  `json:"firstIndex"`
-}
-
-// RksOptions common ruckus query options for data Retrieval
-type RksOptions struct {
-	// optional: the index of the 1st Entry to be retrieved.
-	// Default 0
-	Index string
-	// optional: the max number of entries to be retrieved.
-	// Default 100
-	ListSize string
-	// optional: The Domain ID.
-	// Default: Current Domain ID
-	DomainID string
-}
-
-// RksObject properties
-type RksObject struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-// RksCommonRes the object returned when retrieving Rks Objects with Name/ID
-type RksCommonRes struct {
-	RksCommonReq
-	List []RksObject `json:"list"`
-}
-
 // GetZones retrieves a Paginated List of Zones
 func (c *Client) GetZones(o RksOptions) (RksCommonRes, error) {
 	if c.serviceTicket == "" {
@@ -166,34 +128,6 @@ func (c *Client) GetZone(id string) (RksZone, error) {
 	var zone RksZone
 	json.NewDecoder(res.Body).Decode(&zone)
 	return zone, nil
-}
-
-// RksController Properties
-type RksController struct {
-	ID             string      `json:"id"`
-	Model          string      `json:"model"`
-	Description    string      `json:"description"`
-	HostName       string      `json:"hostName"`
-	Mac            string      `json:"mac"`
-	SerialNumber   string      `json:"serialNumber"`
-	ClusterRole    string      `json:"clusterRole"`
-	ControlNatIP   string      `json:"controlNatIp"`
-	UptimeInSec    int         `json:"uptimeInSec"`
-	Name           string      `json:"name"`
-	Version        string      `json:"version"`
-	ApVersion      string      `json:"apVersion"`
-	ControlIP      string      `json:"controlIp"`
-	ClusterIP      string      `json:"clusterIp"`
-	ManagementIP   string      `json:"managementIp"`
-	ControlIpv6    interface{} `json:"controlIpv6"`
-	ClusterIpv6    interface{} `json:"clusterIpv6"`
-	ManagementIpv6 interface{} `json:"managementIpv6"`
-}
-
-// RksSysSumRes ruckus controller result
-type RksSysSumRes struct {
-	RksCommonReq
-	List []RksController `json:"list"`
 }
 
 // GetSysSum retrieves system summary information from the Ruckus Controller
