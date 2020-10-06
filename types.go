@@ -1,5 +1,11 @@
 package ruckus
 
+// Mapper ...
+type Mapper struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
 // SZAuthObj SmartZone Auth Object (*ServiceTicket)
 type SZAuthObj struct {
 	ControllerVersion string `json:"controllerVersion"`
@@ -68,12 +74,18 @@ type RksSysSumRes struct {
 
 // RksAP ruckus ap properties
 type RksAP struct {
-	MacAddr   string `json:"mac"`
+	MacAddr   string `json:"apMac"`
 	ZoneID    string `json:"zoneId"`
-	ApGroupID string `json:"apGroupId"`
+	GroupID   string `json:"apGroupId"`
+	GroupName string `json:"apGroupName"`
+	ZoneName  string `json:"zoneName"`
 	Serial    string `json:"serial"`
-	Name      string `json:"name"`
-	LanPorts  int    `json:"lanPortSize"`
+	ApName    string `json:"deviceName"`
+	Model     string `json:"model"`
+	Status    string `json:"status"`
+	IPAddr    string `json:"ip"`
+	ExtIPAddr string `json:"extIp"`
+	Firmware  string `json:"firmwareVersion"`
 }
 
 // ApIntf ...
