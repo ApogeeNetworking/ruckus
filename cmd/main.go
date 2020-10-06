@@ -24,12 +24,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("login failed: %v", err)
 	}
+	defer func() {
+		err := sz.Logout()
+		if err != nil {
+			// Why did we err Logging Out
+			fmt.Println(err)
+		}
+	}()
 	// mac := "EC:58:EA:0A:24:D0"
 	// mac := "60:d0:2c:2a:52:b0"
 	// apIntf, err := sz.GetApLldp(mac)
 	// fmt.Println(apIntf)
 	rkszones(sz)
-	err = sz.Logout()
 }
 
 func aps(sz *ruckus.Client) {
