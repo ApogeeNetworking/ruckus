@@ -3,7 +3,9 @@ package ruckus
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
+	"strings"
 )
 
 // RksAP ruckus ap properties
@@ -70,4 +72,101 @@ func (c *Client) GetApGroups(o RksOptions, zoneID string) ([]RksObject, error) {
 	json.NewDecoder(res.Body).Decode(&grps)
 	fmt.Println(grps.TotalCount)
 	return grps.List, nil
+}
+
+// ApIntf ...
+type ApIntf struct {
+	MacAddr string `json:"apMac"`
+	Speed   string `json:"phyLink"`
+	Status  string `json:"logicLink"`
+	Duplex  string
+}
+
+// GetApIntf ...
+func (c *Client) GetApIntf(macAddr string) (ApIntf, error) {
+	uri := fmt.Sprintf("https://%s:8443/wsg/api/scg/aps/%s", c.host, macAddr)
+	req, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return ApIntf{}, err
+	}
+	c.addQS(req, RksOptions{})
+	res, err := c.http.Do(req)
+	if err != nil {
+		return ApIntf{}, err
+	}
+	defer res.Body.Close()
+	type getApRESP struct {
+		Success bool `json:"success"`
+		Data    struct {
+			LanPorts []ApIntf `json:"lanPortStatus"`
+		} `json:"data"`
+	}
+	var apResp getApRESP
+	json.NewDecoder(res.Body).Decode(&apResp)
+	var apIntf ApIntf
+	if apResp.Success {
+		for _, port := range apResp.Data.LanPorts {
+			status := strings.ToLower(port.Status)
+			if status == "up" {
+				speedClean := strings.Replace(
+					port.Speed, "Up ", "", -1,
+				)
+				speedSplit := strings.Split(speedClean, " ")
+				apIntf = ApIntf{
+					MacAddr: port.MacAddr,
+					Speed:   speedSplit[0],
+					Duplex:  strings.ToUpper(speedSplit[1]),
+					Status:  status,
+				}
+				break
+			}
+			apIntf = ApIntf{
+				MacAddr: port.MacAddr,
+				Speed:   status,
+				Status:  status,
+			}
+		}
+	}
+	return apIntf, nil
+}
+
+/*https://10.150.10.154:8443/wsg/api/public/v8_1/aps/60:D0:2C:2A:52:B0/apLldpNeighbors?serviceTicket=ST-135-RAdmIQLJOUd4BBjMecQa-vsz01-colo-dev-apogee-us&_dc=1601943678887*/
+
+// ApLldp ...
+type ApLldp struct {
+	RemoteHostname string `json:"lldpSysName"`
+	RemoteIntf     string `json:"lldpPortDesc"`
+	RemoteIP       string `json:"lldpMgmtIP"`
+}
+
+// GetApLldp ...
+func (c *Client) GetApLldp(macAddr string) (ApLldp, error) {
+	uri := fmt.Sprintf("/aps/%s/apLldpNeighbors", macAddr)
+	req, err := c.genGetReq(uri)
+	if err != nil {
+		return ApLldp{}, err
+	}
+	c.addQS(req, RksOptions{})
+	res, err := c.http.Do(req)
+	if err != nil {
+		return ApLldp{}, err
+	}
+	defer res.Body.Close()
+	type getApRESP struct {
+		Count int      `json:"totalCount"`
+		List  []ApLldp `json:"list"`
+	}
+	var apResp getApRESP
+	var apLldp ApLldp
+	if err := json.NewDecoder(res.Body).Decode(&apResp); err != nil {
+		return apLldp, err
+	}
+	if apResp.Count == 0 {
+		return apLldp, nil
+	}
+	for _, lldp := range apResp.List {
+		apLldp = lldp
+		break
+	}
+	return apLldp, nil
 }
