@@ -31,11 +31,42 @@ func main() {
 			fmt.Println(err)
 		}
 	}()
+	type ApChangeREQ struct {
+		MacAddr   string
+		GroupName string
+		ApName    string
+		GroupID   string
+		ZoneID    string
+	}
+	// apChng := ApChangeREQ{
+	// 	MacAddr:   "60:D0:2C:2A:52:B0",
+	// 	ApName:    "ap01.austin.introom.saml.tx",
+	// 	GroupName: "Dev-Lab-Zone1-Group3",
+	// }
+	// zoneIds := rkszones(sz)
+	// for _, zoneID := range zoneIds {
+	// 	apGroups, _ := sz.GetApGroups(ruckus.RksOptions{}, zoneID)
+	// 	for _, apGroup := range apGroups {
+	// 		if apChng.GroupName == apGroup.Name {
+	// 			apChng.GroupID = apGroup.ID
+	// 			apChng.ZoneID = zoneID
+	// 		}
+	// 	}
+	// }
+	// sz.SetApNameAndGroup(
+	// 	apChng.MacAddr,
+	// 	apChng.ApName,
+	// 	apChng.ZoneID,
+	// 	apChng.GroupID,
+	// )
+
 	// mac := "EC:58:EA:0A:24:D0"
-	// mac := "60:d0:2c:2a:52:b0"
+	mac := "60:d0:2c:2a:52:b0"
+	sz.RebootAp(mac)
+	// sz.GetAp(mac)
 	// apIntf, err := sz.GetApLldp(mac)
 	// fmt.Println(apIntf)
-	rkszones(sz)
+	// aps(sz)
 }
 
 func aps(sz *ruckus.Client) {
@@ -49,14 +80,16 @@ func aps(sz *ruckus.Client) {
 	}
 }
 
-func rkszones(sz *ruckus.Client) {
+func rkszones(sz *ruckus.Client) []string {
 	zones, err := sz.GetZones(ruckus.RksOptions{})
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
+	var zoneIds []string
 	for _, zone := range zones.List {
-		fmt.Println(zone)
+		zoneIds = append(zoneIds, zone.ID)
 	}
+	return zoneIds
 	// fmt.Println(zones.List[0].ID)
 }
 
