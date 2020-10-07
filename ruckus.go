@@ -42,6 +42,7 @@ func New(host, user, pass string, ignoreSSL bool) *Client {
 
 // Login est a session with the Ruckus SZ Controller
 func (c *Client) Login() error {
+	// Create our Auth JSON Object|Convert to Reader for POST REQ
 	authObj := struct {
 		User string `json:"username"`
 		Pass string `json:"password"`
@@ -64,7 +65,6 @@ func (c *Client) Login() error {
 	}{}
 	json.NewDecoder(res.Body).Decode(&auth)
 	c.serviceTicket = auth.Ticket
-	fmt.Println(c.serviceTicket)
 	return nil
 }
 
