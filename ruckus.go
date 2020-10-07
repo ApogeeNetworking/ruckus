@@ -42,14 +42,10 @@ func New(host, user, pass string, ignoreSSL bool) *Client {
 
 // Login est a session with the Ruckus SZ Controller
 func (c *Client) Login() error {
-	type creds struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-	authObj := creds{
-		Username: c.username,
-		Password: c.password,
-	}
+	authObj := struct {
+		User string `json:"username"`
+		Pass string `json:"password"`
+	}{User: c.username, Pass: c.password}
 	jdata, _ := json.Marshal(&authObj)
 	credentials := strings.NewReader(string(jdata))
 	req, err := http.NewRequest("POST", c.BaseURL+"/serviceTicket", credentials)
@@ -62,10 +58,13 @@ func (c *Client) Login() error {
 		return fmt.Errorf("failed to login: %v", err)
 	}
 	defer res.Body.Close()
-	var auth SZAuthObj
+	// Auth RESP returns an JSON Object with serviceTicket Field
+	auth := struct {
+		Ticket string `json:"serviceTicket"`
+	}{}
 	json.NewDecoder(res.Body).Decode(&auth)
-	c.serviceTicket = auth.ServiceTicket
-	// fmt.Println(auth)
+	c.serviceTicket = auth.Ticket
+	fmt.Println(c.serviceTicket)
 	return nil
 }
 

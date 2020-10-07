@@ -6,12 +6,6 @@ type Mapper struct {
 	Value string `json:"value"`
 }
 
-// SZAuthObj SmartZone Auth Object (*ServiceTicket)
-type SZAuthObj struct {
-	ControllerVersion string `json:"controllerVersion"`
-	ServiceTicket     string `json:"serviceTicket"`
-}
-
 // RksCommonReq contains fields used in ALL Get Reqs
 type RksCommonReq struct {
 	TotalCount int  `json:"totalCount"`
