@@ -99,6 +99,6 @@ type ApIntf struct {
 // ApLldp ...
 type ApLldp struct {
 	RemoteHostname string `json:"lldpSysName"`
-	RemoteIntf     string `json:"lldpPortDesc"`
+	RemoteIntf     string `json:"lldpPortID"`
 	RemoteIP       string `json:"lldpMgmtIP"`
 }

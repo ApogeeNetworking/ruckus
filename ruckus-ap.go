@@ -237,7 +237,12 @@ func (c *Client) GetApLldp(macAddr string) (ApLldp, error) {
 		return apLldp, nil
 	}
 	for _, lldp := range apResp.List {
-		apLldp = lldp
+		rmIntf := strings.Replace(lldp.RemoteIntf, "ifname ", "", -1)
+		apLldp = ApLldp{
+			RemoteHostname: lldp.RemoteHostname,
+			RemoteIntf:     rmIntf,
+			RemoteIP:       lldp.RemoteIP,
+		}
 		break
 	}
 	return apLldp, nil
