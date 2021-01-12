@@ -2,8 +2,9 @@ package ruckus
 
 // Mapper ...
 type Mapper struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
+	Type     string `json:"type"`
+	Value    string `json:"value"`
+	Operator string `json:"operator,omitempty"`
 }
 
 // RksCommonReq contains fields used in ALL Get Reqs
@@ -60,21 +61,30 @@ type RksController struct {
 	MgmtIpv6     interface{} `json:"managementIpv6"`
 }
 
+// RksWlan ...
+type RksWlan struct {
+	Name     string `json:"name"`
+	SSID     string `json:"ssid"`
+	Client   int    `json:"clients"`
+	Traffic  int64  `json:"traffic"`
+	ZoneName string `json:"zoneName"`
+}
+
 // RksSysSumRes ruckus controller result
 type RksSysSumRes struct {
 	RksCommonReq
 	List []RksController `json:"list"`
 }
 
-// RksAP ruckus ap properties
-type RksAP struct {
+// RksAp ruckus ap properties
+type RksAp struct {
+	ApName    string `json:"deviceName"`
 	MacAddr   string `json:"apMac"`
 	ZoneID    string `json:"zoneId"`
 	GroupID   string `json:"apGroupId"`
 	GroupName string `json:"apGroupName"`
 	ZoneName  string `json:"zoneName"`
 	Serial    string `json:"serial"`
-	ApName    string `json:"deviceName"`
 	Model     string `json:"model"`
 	Status    string `json:"status"`
 	IPAddr    string `json:"ip"`
