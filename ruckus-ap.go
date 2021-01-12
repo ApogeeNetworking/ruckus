@@ -57,9 +57,9 @@ type rksSortInfo struct {
 }
 
 // GetAPs retrieves APs associated with the Controller
-func (c *Client) GetAPs(o RksOptions) ([]RksAP, error) {
-	var getMore func(o RksOptions, r []RksAP) ([]RksAP, error)
-	getMore = func(o RksOptions, rksAps []RksAP) ([]RksAP, error) {
+func (c *Client) GetAPs(o RksOptions) ([]RksAp, error) {
+	var getMore func(o RksOptions, r []RksAp) ([]RksAp, error)
+	getMore = func(o RksOptions, rksAps []RksAp) ([]RksAp, error) {
 		q := RksQuery{
 			Filters:       []Mapper{},
 			FullTxtSearch: Mapper{Type: "AND", Value: ""},
@@ -83,7 +83,7 @@ func (c *Client) GetAPs(o RksOptions) ([]RksAP, error) {
 		defer res.Body.Close()
 		type rksApResult struct {
 			RksCommonReq
-			List []RksAP `json:"list"`
+			List []RksAp `json:"list"`
 		}
 		var aps rksApResult
 		json.NewDecoder(res.Body).Decode(&aps)
@@ -97,28 +97,43 @@ func (c *Client) GetAPs(o RksOptions) ([]RksAP, error) {
 		}
 		return rksAps, nil
 	}
-	return getMore(o, []RksAP{})
+	return getMore(o, []RksAp{})
 }
 
 // GetAp ...
-func (c *Client) GetAp(macAddr string) (string, error) {
-	req, err := c.genGetReq("/aps/" + macAddr)
+func (c *Client) GetAp(macAddr string) (RksAp, error) {
+	var ap RksAp
+	q := RksQuery{
+		Filters:       []Mapper{},
+		FullTxtSearch: Mapper{Type: "AND", Value: macAddr},
+		Attrs:         []string{"*"},
+		SortInfo:      rksSortInfo{SortCol: "apMac", Direction: "ASC"},
+		Page:          1,
+		Limit:         2,
+	}
+	qjson, _ := json.Marshal(&q)
+	body := strings.NewReader(string(qjson))
+	req, err := http.NewRequest("POST", c.BaseURL+"/query/ap", body)
 	if err != nil {
-		fmt.Println(err)
-		return "", err
+		return ap, err
 	}
 	c.addQS(req, RksOptions{})
+
 	res, err := c.http.Do(req)
 	if err != nil {
-		return "", err
+		return ap, fmt.Errorf("failed to get resp: %v", err)
 	}
 	defer res.Body.Close()
-	type getApRESP struct {
-		Model string `json:"model"`
+	type rksApResult struct {
+		RksCommonReq
+		List []RksAp `json:"list"`
 	}
-	var apSum getApRESP
-	json.NewDecoder(res.Body).Decode(&apSum)
-	return apSum.Model, nil
+	var aps rksApResult
+	json.NewDecoder(res.Body).Decode(&aps)
+	if len(aps.List) == 1 {
+		ap = aps.List[0]
+	}
+	return ap, nil
 }
 
 // GetApGroupName ...
