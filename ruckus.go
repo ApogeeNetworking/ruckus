@@ -23,9 +23,9 @@ type Client struct {
 }
 
 // New creates a Reference to a Client
-func New(host, user, pass string, ignoreSSL bool) *Client {
+func New(apiVersion, host, user, pass string, ignoreSSL bool) *Client {
 	return &Client{
-		BaseURL:  fmt.Sprintf("https://%s:8443/wsg/api/public/v8_1", host),
+		BaseURL:  fmt.Sprintf("https://%s:8443/wsg/api/public/v%s", host, apiVersion),
 		host:     host,
 		username: user,
 		password: pass,
