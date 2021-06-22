@@ -78,18 +78,19 @@ type RksSysSumRes struct {
 
 // RksAp ruckus ap properties
 type RksAp struct {
-	ApName    string `json:"deviceName"`
-	MacAddr   string `json:"apMac"`
-	ZoneID    string `json:"zoneId"`
-	GroupID   string `json:"apGroupId"`
-	GroupName string `json:"apGroupName"`
-	ZoneName  string `json:"zoneName"`
-	Serial    string `json:"serial"`
-	Model     string `json:"model"`
-	Status    string `json:"status"`
-	IPAddr    string `json:"ip"`
-	ExtIPAddr string `json:"extIp"`
-	Firmware  string `json:"firmwareVersion"`
+	ApName     string `json:"deviceName"`
+	MacAddr    string `json:"apMac"`
+	ZoneID     string `json:"zoneId"`
+	GroupID    string `json:"apGroupId"`
+	GroupName  string `json:"apGroupName"`
+	ZoneName   string `json:"zoneName"`
+	Serial     string `json:"serial"`
+	Model      string `json:"model"`
+	Status     string `json:"status"`
+	IPAddr     string `json:"ip"`
+	ExtIPAddr  string `json:"extIp"`
+	Firmware   string `json:"firmwareVersion"`
+	PortStatus string `json:"poePortStatus"`
 }
 
 // ApIntf ...
