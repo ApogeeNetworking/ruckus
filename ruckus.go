@@ -35,7 +35,7 @@ func New(apiVersion, host, user, pass string, ignoreSSL bool) *Client {
 					InsecureSkipVerify: ignoreSSL,
 				},
 			},
-			Timeout: 8 * time.Second,
+			Timeout: 120 * time.Second,
 		},
 	}
 }
